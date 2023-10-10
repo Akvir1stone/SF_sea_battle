@@ -2,9 +2,6 @@ class Field:
     def __init__(self):
         # 2D array 6x6 filled with 'O'
         self.field = [['O', 'O', 'O', 'O', 'O', 'O'], ['O', 'O', 'O', 'O', 'O', 'O'], ['O', 'O', 'O', 'O', 'O', 'O'], ['O', 'O', 'O', 'O', 'O', 'O'], ['O', 'O', 'O', 'O', 'O', 'O'], ['O', 'O', 'O', 'O', 'O', 'O']]
-        self.ship3count = 0
-        self.ship2count = 0
-        self.ship1count = 0
 
     def shoot_at_point(self, x, y):
         if self.field[x][y] == 'O':
@@ -16,15 +13,15 @@ class Field:
         else:
             raise ValueError('Вы уже стреляли в эту точку')
 
-    def get_ships_count(self, size):
-        if size == 1:
-            return self.ship1count
-        elif size == 2:
-            return self.ship2count
-        elif size == 3:
-            return self.ship3count
-        else:
-            raise ValueError('Таких кораблей не существует')
+    def check_place(self, x, y):
+        if 0 > x > 5:
+            return True
+        if self.field[x][y] == 'O':
+            return True
+        return False
+
+    def place_ship(self, x, y):
+        self.field[x][y] = '#'
 
     @property
     def get_field(self):
@@ -38,43 +35,28 @@ class Ship:
         self.size = 0
         self.horizontal = True
 
-    @property
-    def place_x(self):
-        return self.x
-
-    @property.setter
-    def place_x(self, x):
-        if 0 < x < 7:
+    def create_ship(self, x, y, size, hor, p):
+        if 0 >= x > 6:
             self.x = x
         else:
-            raise ValueError('Вы вышли за пределы игрового поля')
-
-    @property
-    def place_y(self):
-        return self.y
-
-    @property.setter
-    def place_y(self, y):
-        if 0 < y < 7:
+            raise ValueError('Параметр х за пределами игрового поля')
+        if 0 >= y > 6:
             self.y = y
         else:
-            raise ValueError('Вы вышли за пределы игрового поля')
-
-    @property
-    def ship_size(self):
-        return self.size
-
-    @property.setter
-    def ship_size(self, size):
-        if 0 < size < 4:
+            raise ValueError('Параметр у за пределами игрового поля')
+        if 0 > size > 4:
             self.size = size
         else:
-            raise ValueError('Нельзя поставить корабль такого размера')
+            raise ValueError('Недопустимый размер корабля')
+        self.horizontal = hor
+        if hor:
+            for i in range(x-1, x+1):
+                for j in range(y-1, y + size):
+                    if not p.check_place(i, j):
+                        raise ValueError('Здесь нельзя постваить корабль')
+        else:
+            for i in range(x-1, x + size):
+                for j in range(y-1, y + 1):
+                    if not p.check_place(i, j):
+                        raise ValueError('Здесь нельзя постваить корабль')
 
-    @property
-    def place_horizontal(self):
-        return self.horizontal
-
-    @property.setter
-    def place_horizontal(self, horizontal: bool):
-        self.horizontal = horizontal
