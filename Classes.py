@@ -42,15 +42,18 @@ class Ship:
 class Board:
     def __init__(self):
         # 2d list 6x6
-        self.board = [['', '', '', '', '', ''], ['', '', '', '', '', ''], ['', '', '', '', '', ''], ['', '', '', '', '', ''], ['', '', '', '', '', ''], ['', '', '', '', '', '']]
+        self.board = []
         for i in range(6):
+            self.board.append([])
             for j in range(6):
-                self.board[i][j] = Dot(i, j)
+                self.board[i].append(Dot(i, j))
         self.ships = []
         self.countrs = []
+        # 3 arrays created for optimizing ship search in methods
         self.ship_dots = []
         self.destr_ship_dots = []
-        self.hiden = False
+        self.miss = []
+        self.hidden = False
 
     def add_ship(self, sh: Ship):
         if sh.dots in self.board and sh.dots not in self.countrs:
@@ -67,5 +70,15 @@ class Board:
                 if i.find_ship(d):
                     i.hp -= 1
                     if i.hp == 0:
+                        for j in i.countrs():
+                            if j not in self.miss and j not in i.dots():
+                                self.miss.append(j)
                         self.ships.pop(i)
+                        return 'destr'
+                    return 'hit'
+        return 'miss'
 
+    def draw_dot(self, d: Dot):
+        if d in self.ship_dots and not self.hidden:
+            return '#'
+        if d in self.ship_dots
