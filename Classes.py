@@ -1,3 +1,6 @@
+import random
+
+
 class Dot:
     def __init__(self, x, y):
         self.x = x
@@ -13,6 +16,10 @@ class Ship:
         self.d = d
         self.hor = hor
         self.hp = hp
+        if hor and d.y > 6 - size:
+            raise ValueError('Здесь нельзя поставить корабль')
+        elif not hor and d.x > 6 - size:
+            raise ValueError('Здесь нельзя поставить корабль')
 
     def dots(self):
         dots = []
@@ -60,6 +67,9 @@ class Board:
             self.ships.append(sh)
             self.ship_dots += sh.dots()
             self.countrs += sh.countrs()
+        else:
+            del sh
+            raise ValueError('Здесь нельзя поставить корабль')
 
     def shoot(self, d: Dot):
         if d not in self.board:
@@ -74,6 +84,8 @@ class Board:
                             if j not in self.miss and j not in i.dots():
                                 self.miss.append(j)
                         self.ships.pop(i)
+                        if not self.ships:
+                            return 'win'
                         return 'destr'
                     return 'hit'
         return 'miss'
@@ -81,4 +93,83 @@ class Board:
     def draw_dot(self, d: Dot):
         if d in self.ship_dots and not self.hidden:
             return '#'
-        if d in self.ship_dots
+        if d in self.destr_ship_dots:
+            return 'X'
+        if d in self.miss:
+            return 'T'
+        return 'O'
+
+
+class Player:
+    def __init__(self, board, enemy):
+        self.board = board
+        self.enemy = enemy
+
+    def ask(self):
+        return Dot()
+
+    def turn(self):
+        self.enemy.shoot(self.ask())
+
+
+class AI(Player):
+    def ask(self):
+        x = random.randint(0, 5)
+        y = random.randint(0, 5)
+        return Dot(x, y)
+
+
+class User(Player):
+    def ask(self):
+        x = int(input('Введите номер строки, по которой хотите выстрелить')) - 1
+        y = int(input('Введите номер столбца, по которому хотите выстрелить')) - 1
+        return Dot(x, y)
+
+
+class Game:
+    def __init__(self):
+        self.board = Board()
+        self.enemy = Board()
+
+    def ask_ship(self, size):
+        while True:
+            print(f'Корабль длинной в {size} клетки(у)')
+            x = int(input('Введите номер строки'))
+            y = int(input('Введите номер столбца'))
+            if size != 1:
+                hor = bool(input(
+                    'Введите 1 если хотите, чтобы нос корабля был направлен вправо, или 0, чтобы нос был направлен вниз'))
+            else:
+                hor = True
+            try:
+                self.board.add_ship(Ship(size, Dot(x, y), hor, size))
+            except:
+                print('Попробуйте создать корабль заново')
+            else:
+                break
+
+    def set_board(self):
+        print('Корабли расставляются следующим образом: сначала вы выбираете координаты точки,')
+        print('на которой будет стоять корма (задняя часть) корабля, а затем выбираете куда будет')
+        print('направлен нос корабля')
+        while True:
+            try:
+                self.ask_ship(3)
+                for i in [1, 2]:
+                    self.ask_ship(2)
+                for i in [1, 2, 3, 4]:
+                    if not int(input('Если не осталось места для кораблей, введите 0, или 1 чтобы продолжить')):
+                        raise ValueError()
+                    self.ask_ship(1)
+            except:
+                self.board.ships = []
+                self.board.countrs = []
+                self.board.ship_dots = []
+                print('Попробуйте расставить корабли занаво')
+            else:
+                break
+
+
+
+
+# classes:  AI(player), User(player), Game() with methods: set_board, random_board, begin_tutor, game_loop, exit
