@@ -10,6 +10,18 @@ class Dot:
         return self.x == other.x and self.y == other.y
 
 
+class ShipCreationException(Exception):
+    pass
+
+
+class ShipPlacementException(Exception):
+    pass
+
+
+class BoardOverflow(Exception):
+    pass
+
+
 class Ship:
     def __init__(self, size, d: Dot, hor: bool, hp):
         self.size = size
@@ -17,27 +29,27 @@ class Ship:
         self.hor = hor
         self.hp = hp
         if hor and d.y > 6 - size:
-            raise ValueError('Здесь нельзя поставить корабль')
+            raise ShipCreationException('Здесь нельзя поставить корабль')
         elif not hor and d.x > 6 - size:
-            raise ValueError('Здесь нельзя поставить корабль')
+            raise ShipPlacementException('Здесь нельзя поставить корабль')
 
     def dots(self):
         dots = []
         for i in range(self.size):
             if self.hor:
-                dots.append(Dot(self.d.x+i, self.d.y))
+                dots.append(Dot(self.d.x + i, self.d.y))
             else:
-                dots.append(Dot(self.d.x, self.d.y+i))
+                dots.append(Dot(self.d.x, self.d.y + i))
         return dots
 
     def countrs(self):
         countrs = []
         for i in range(3):
-            for j in range(self.size+2):
+            for j in range(self.size + 2):
                 if self.hor:
-                    countrs.append(Dot(self.d.x+i-1, self.d.y+i-1))
+                    countrs.append(Dot(self.d.x + i - 1, self.d.y + i - 1))
                 else:
-                    countrs.append(Dot(self.d.x+i-1, self.d.y+i-1))
+                    countrs.append(Dot(self.d.x + i - 1, self.d.y + i - 1))
         return countrs
 
     def find_ship(self, d):
@@ -105,7 +117,8 @@ class Player:
         self.board = board
         self.enemy = enemy
 
-    def ask(self):
+    @staticmethod
+    def ask():
         return Dot()
 
     def turn(self):
@@ -113,14 +126,16 @@ class Player:
 
 
 class AI(Player):
-    def ask(self):
+    @staticmethod
+    def ask():
         x = random.randint(0, 5)
         y = random.randint(0, 5)
         return Dot(x, y)
 
 
 class User(Player):
-    def ask(self):
+    @staticmethod
+    def ask():
         x = int(input('Введите номер строки, по которой хотите выстрелить')) - 1
         y = int(input('Введите номер столбца, по которому хотите выстрелить')) - 1
         return Dot(x, y)
@@ -143,10 +158,31 @@ class Game:
                 hor = True
             try:
                 self.board.add_ship(Ship(size, Dot(x, y), hor, size))
-            except:
+            except ShipPlacementException:
+                print('Попробуйте создать корабль заново')
+            except ShipCreationException:
                 print('Попробуйте создать корабль заново')
             else:
                 break
+
+    def ask_ship_ai(self, size):
+        i = 0
+        while i < 2000:
+            x = int(AI.ask())
+            y = int(AI.ask())
+            if size != 1:
+                hor = bool(random.randint(0, 1))
+            else:
+                hor = True
+            try:
+                self.board.add_ship(Ship(size, Dot(x, y), hor, size))
+            except ShipPlacementException:
+                i += 1
+            except ShipCreationException:
+                i += 1
+            else:
+                break
+        raise BoardOverflow()
 
     def set_board(self):
         print('Корабли расставляются следующим образом: сначала вы выбираете координаты точки,')
@@ -159,9 +195,9 @@ class Game:
                     self.ask_ship(2)
                 for i in [1, 2, 3, 4]:
                     if not int(input('Если не осталось места для кораблей, введите 0, или 1 чтобы продолжить')):
-                        raise ValueError()
+                        raise BoardOverflow()
                     self.ask_ship(1)
-            except:
+            except BoardOverflow:
                 self.board.ships = []
                 self.board.countrs = []
                 self.board.ship_dots = []
@@ -169,7 +205,19 @@ class Game:
             else:
                 break
 
+    def random_board(self):
+        while True:
+            try:
+                self.ask_ship_ai(3)
+                for i in [1, 2]:
+                    self.ask_ship_ai(2)
+                for i in [1, 2, 3, 4]:
+                    self.ask_ship_ai(1)
+            except BoardOverflow:
+                self.board.ships = []
+                self.board.countrs = []
+                self.board.ship_dots = []
+            else:
+                break
 
-
-
-# classes:  AI(player), User(player), Game() with methods: set_board, random_board, begin_tutor, game_loop, exit
+# Game() with methods: set_board, random_board, begin_tutor, game_loop, exit
