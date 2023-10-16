@@ -342,7 +342,7 @@ class Game:
         print('Нажмите Enter чтобы начать')
         input()
         print('Расставьте корабли')
-        # self.set_board()
+        self.set_board()
         print('Компьютер расставляет корабли')
         self.random_board()
         self.game_loop()
