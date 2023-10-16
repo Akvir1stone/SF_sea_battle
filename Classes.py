@@ -33,9 +33,9 @@ class Ship:
         self.hor = hor
         self.hp = hp
         if hor and d.x > 6 - size:
-            raise ShipCreationException('Здесь нельзя поставить корабль y')
+            raise ShipCreationException('Здесь нельзя поставить корабль')
         elif not hor and d.y > 6 - size:
-            raise ShipPlacementException('Здесь нельзя поставить корабль x')
+            raise ShipPlacementException('Здесь нельзя поставить корабль')
 
     def dots(self):
         dots = []
@@ -160,7 +160,7 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.enemy = Board()
-        # self.enemy.hidden = True
+        self.enemy.hidden = True
 
     def ask_ship(self, size):
         while True:
@@ -182,10 +182,10 @@ class Game:
                 self.board.add_ship(Ship(size, Dot(x, y), hor, size))
             except ShipPlacementException as e:
                 print(e)
-                print('Попробуйте создать корабль заново ShipPlacementException')
+                print('Попробуйте создать корабль заново')
             except ShipCreationException as e:
                 print(e)
-                print('Попробуйте создать корабль заново ShipCreationException')
+                print('Попробуйте создать корабль заново')
             else:
                 break
 
@@ -262,7 +262,7 @@ class Game:
                     self.enemy.ship_dots = []
 
     def game_loop(self):
-        play = True
+        play = False
         end = False
         while True:
             while True:
@@ -278,7 +278,7 @@ class Game:
                         break
                 if fb == 'win':
                     print('Вы победили')
-                    play = self.exit_restart
+                    play = self.exit_restart()
                     end = True
                     break
                 elif fb == 'destr':
@@ -343,22 +343,17 @@ class Game:
         input()
         print('Расставьте корабли')
         # self.set_board()
-        self.random_board()
         print('Компьютер расставляет корабли')
         self.random_board()
         self.game_loop()
 
     @staticmethod
-    def exit_restart(self):
-        if input('Если вы хотите начать игру заново введите "1", если хотите закончить введите "0"'):
+    def exit_restart():
+        if int(input('Если вы хотите начать игру заново введите "1", если хотите закончить введите "0" ')):
             return True
         else:
             return False
 
 
-# Add win condition and change random player board creation back to manual
-
-
 game = Game()
 game.begin_tutor()
-
